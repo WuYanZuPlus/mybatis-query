@@ -1,6 +1,5 @@
 package com.jianghu.winter.query.core;
 
-import com.alibaba.fastjson.JSON;
 import com.jianghu.winter.query.util.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -23,7 +22,6 @@ public class PageQueryTest {
         PageQuery pageQuery = new PageQuery();
         pageQuery.setSort("user_name,desc");
         List<FieldError> fieldErrors = BeanUtils.checkBean(pageQuery);
-        log.info("校验结果:\n{}", JSON.toJSONString(fieldErrors, true));
         assertTrue(fieldErrors.isEmpty());
     }
 

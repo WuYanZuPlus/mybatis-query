@@ -1,6 +1,5 @@
 package com.jianghu.winter.query.core;
 
-import com.alibaba.fastjson.JSON;
 import com.jianghu.winter.query.user.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.io.Resources;
@@ -61,7 +60,6 @@ public class MybatisTest {
     @Test
     public void test_select() {
         List<UserEntity> entities = userService.query(UserQuery.builder().build());
-        log.info("query response:\n{}", JSON.toJSONString(entities, true));
         assertEquals(4, entities.size());
     }
 
@@ -81,7 +79,6 @@ public class MybatisTest {
         query.setPageNumber(0);
         query.setPageSize(2);
         PageList<UserEntity> page = userService.page(query);
-        log.info("page response:\n{}", JSON.toJSONString(page, true));
         assertEquals(4, page.total);
         assertEquals(2, page.getList().size());
     }
@@ -95,7 +92,6 @@ public class MybatisTest {
     @Test
     public void test_getById() {
         UserEntity userEntity = userService.get(1);
-        log.info("entity:\n{}", JSON.toJSONString(userEntity, true));
         assertEquals("daniel", userEntity.getAccount());
     }
 
@@ -137,7 +133,6 @@ public class MybatisTest {
 
         userService.create(userEntity);
         UserEntity entity = userService.get(UserQuery.builder().account("test").build());
-        log.info("insert entity:\n{}", JSON.toJSONString(entity, true));
         assertThat(entity)
                 .hasFieldOrPropertyWithValue("id", 5)
                 .hasFieldOrPropertyWithValue("account", "test")
@@ -177,7 +172,6 @@ public class MybatisTest {
         int insertCount = userService.create(list);
         assertEquals(2, insertCount);
         List<UserEntity> entities = userService.query(userQuery);
-        log.info("insert statement:\n{}", JSON.toJSONString(entities, true));
         assertEquals(count + 2, userService.count(userQuery));
 
     }
@@ -190,7 +184,6 @@ public class MybatisTest {
         userEntity.setUserType(UserType.TENANT);
         userService.update(userEntity);
         UserEntity afterUpdate = userService.get(1);
-        log.info("afterUpdate:\n{}", JSON.toJSONString(afterUpdate, true));
         assertThat(afterUpdate)
                 .hasFieldOrPropertyWithValue("mobile", null)
                 .hasFieldOrPropertyWithValue("userType", UserType.TENANT)
@@ -204,7 +197,6 @@ public class MybatisTest {
         userEntity.setUserName("updateName");
         userService.patch(userEntity);
         UserEntity afterUpdate = userService.get(1);
-        log.info("afterUpdate:\n{}", JSON.toJSONString(afterUpdate, true));
         assertThat(afterUpdate)
                 .hasFieldOrProperty("mobile").isNotNull()
                 .hasFieldOrPropertyWithValue("userName", "updateName");
@@ -227,7 +219,6 @@ public class MybatisTest {
     public void test_enum() {
         UserQuery userQuery = UserQuery.builder().userType(UserType.SYSTEM).build();
         List<UserEntity> entities = userService.query(userQuery);
-        log.info("query:\n{}", JSON.toJSONString(entities, true));
         assertEquals(3, entities.size());
     }
 
@@ -236,7 +227,6 @@ public class MybatisTest {
     public void test_and() {
         UserQuery userQuery = UserQuery.builder().userNameOrNickName("别名1").build();
         List<UserEntity> entities = userService.query(userQuery);
-        log.info("query:\n{}", JSON.toJSONString(entities, true));
         assertEquals(1, entities.size());
     }
 }
