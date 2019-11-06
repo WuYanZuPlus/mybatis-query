@@ -1,15 +1,50 @@
 package com.jianghu.winter.query.core;
 
+import com.jianghu.winter.query.cache.CacheUtil;
+import com.jianghu.winter.query.cache.CacheWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCache;
+
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
  * @author daniel.hu
- * @date 2019/9/5 13:52
  */
 public abstract class AbstractMybatisDataService<E extends Persistable<I>, I extends Serializable, Q extends PageQuery> implements MybatisDataService<E, I, Q> {
 
     protected abstract IMapper<E, I, Q> getMapper();
+
+    protected Cache cache = new NoOpCache("noOpCache");
+
+    protected final Class<E> entityClass;
+
+    @Autowired(required = false)
+    public void setCacheManager(CacheManager cacheManager) {
+        if (cacheManager != null) {
+            cache = cacheManager.getCache(getCacheName());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public AbstractMybatisDataService() {
+        this.entityClass = (Class<E>) getParameterizedType();
+    }
+
+    private Type getParameterizedType() {
+        Type type = this.getClass().getGenericSuperclass();
+        // 泛型数组
+        Type[] parameterizedTypes = ((ParameterizedType) type).getActualTypeArguments();
+        return parameterizedTypes[0];
+    }
+
+    protected String getCacheName() {
+        return entityClass.getSimpleName().intern();
+    }
 
     @Override
     public E get(I id) {
@@ -23,46 +58,76 @@ public abstract class AbstractMybatisDataService<E extends Persistable<I>, I ext
 
     @Override
     public void create(E entity) {
-        getMapper().insert(entity);
+        try {
+            getMapper().insert(entity);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public int create(Iterable<E> entities) {
-        return getMapper().batchInsert(entities);
+        try {
+            return getMapper().batchInsert(entities);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public void update(E entity) {
-        getMapper().update(entity);
+        try {
+            getMapper().update(entity);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public void patch(E entity) {
-        getMapper().patch(entity);
+        try {
+            getMapper().patch(entity);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public int patch(E entity, Q query) {
-        return getMapper().patchByQuery(entity, query);
+        try {
+            return getMapper().patchByQuery(entity, query);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public void delete(I id) {
-        getMapper().delete(id);
+        try {
+            getMapper().delete(id);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public int delete(Q query) {
-        return getMapper().deleteByQuery(query);
+        try {
+            return getMapper().deleteByQuery(query);
+        } finally {
+            cache.clear();
+        }
     }
 
     @Override
     public List<E> query(Q query) {
-        return getMapper().query(query);
+        String queryKey = "query_" + CacheUtil.transformObjectToCacheKey(query);
+        return CacheWrapper.execute(cache, queryKey, () -> getMapper().query(query));
     }
 
     @Override
     public long count(Q query) {
-        return getMapper().count(query);
+        String queryKey = "count_" + CacheUtil.transformObjectToCacheKey(query);
+        return CacheWrapper.execute(cache, queryKey, () -> getMapper().count(query));
     }
 }

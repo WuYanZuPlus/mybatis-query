@@ -8,6 +8,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.*;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 import java.io.Reader;
 import java.sql.Connection;
@@ -22,7 +23,6 @@ import static org.junit.Assert.assertNull;
 
 /**
  * @author daniel.hu
- * @date 2019/8/27 10:28
  */
 @Slf4j
 public class MybatisTest {
@@ -50,6 +50,7 @@ public class MybatisTest {
         sqlSession = sqlSessionFactory.openSession();
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         userService = new UserService(userMapper);
+        userService.setCacheManager(new ConcurrentMapCacheManager());
     }
 
     @After
@@ -171,7 +172,6 @@ public class MybatisTest {
         long count = userService.count(userQuery);
         int insertCount = userService.create(list);
         assertEquals(2, insertCount);
-        List<UserEntity> entities = userService.query(userQuery);
         assertEquals(count + 2, userService.count(userQuery));
 
     }

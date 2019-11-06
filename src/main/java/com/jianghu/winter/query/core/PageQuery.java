@@ -4,15 +4,15 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import javax.validation.constraints.Pattern;
 
 /**
  * @author daniel.hu
- * @date 2019/8/22 15:32
  */
 @Getter
 @Setter
-public class PageQuery {
+public class PageQuery implements Serializable{
 
     static final String REGEX_SORT = "(\\w+,(asc|desc);)*\\w+,(asc|desc)";
 
