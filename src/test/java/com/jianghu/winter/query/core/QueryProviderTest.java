@@ -27,7 +27,7 @@ public class QueryProviderTest {
     @Test
     public void buildSelect() {
         UserQuery userQuery = UserQuery.builder().build();
-        assertEquals("SELECT * FROM t_user", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user", queryProvider.buildSelect(userQuery));
     }
 
     @Test
@@ -43,61 +43,61 @@ public class QueryProviderTest {
     public void where() {
         UserQuery byAccount = UserQuery.builder().account(ACCOUNT).build();
         String actualSql = queryProvider.buildSelect(byAccount);
-        assertEquals("SELECT * FROM t_user WHERE account = #{account}", actualSql);
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE account = #{account}", actualSql);
     }
 
     @Test
     public void wheres() {
         UserQuery userQuery = UserQuery.builder().account(ACCOUNT).userName("赵子龙").build();
-        assertEquals("SELECT * FROM t_user WHERE account = #{account} AND user_name = #{userName}", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE account = #{account} AND user_name = #{userName}", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void wheresAndPage() {
         UserQuery userQuery = UserQuery.builder().account(ACCOUNT).userName("赵子龙").build();
         userQuery.setPageNumber(0);
-        assertEquals("SELECT * FROM t_user WHERE account = #{account} AND user_name = #{userName} LIMIT 0,10", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE account = #{account} AND user_name = #{userName} LIMIT 0,10", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void sort() {
         UserQuery userQuery = UserQuery.builder().build();
         userQuery.setSort("user_name DESC");
-        assertEquals("SELECT * FROM t_user ORDER BY user_name DESC", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user ORDER BY user_name DESC", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void custom_sort() {
         UserQuery userQuery = UserQuery.builder().build();
         userQuery.setSort("FIELD(user_name,'" + StringUtils.join(Arrays.asList("daniel", "user1"), "','") + "')");
-        assertEquals("SELECT * FROM t_user ORDER BY FIELD(user_name,'daniel','user1')", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user ORDER BY FIELD(user_name,'daniel','user1')", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void whereAndLike() {
         UserQuery userQuery = UserQuery.builder().build();
         userQuery.setUserNameLike("da");
-        assertEquals("SELECT * FROM t_user WHERE user_name LIKE #{userNameLike}", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE user_name LIKE #{userNameLike}", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void whereAndIn() {
         UserQuery userQuery = UserQuery.builder().build();
         userQuery.setIdIn(Arrays.asList(1, 2, 3));
-        assertEquals("SELECT * FROM t_user WHERE id IN (#{idIn[0]}, #{idIn[1]}, #{idIn[2]})", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE id IN (#{idIn[0]}, #{idIn[1]}, #{idIn[2]})", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void whereAndIn2() {
         UserQuery userQuery = UserQuery.builder().build();
         userQuery.setIdIn(new ArrayList<>());
-        assertEquals("SELECT * FROM t_user", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user", queryProvider.buildSelect(userQuery));
     }
 
     @Test
     public void and() {
         UserQuery userQuery = UserQuery.builder().userNameOrNickName("test").build();
-        assertEquals("SELECT * FROM t_user WHERE (user_name = #{userNameOrNickName} OR nick_name = #{userNameOrNickName})", queryProvider.buildSelect(userQuery));
+        assertEquals("SELECT account, user_name AS userName, password, mobile, email, nick_name AS nickName, valid, user_type AS userType, id FROM t_user WHERE (user_name = #{userNameOrNickName} OR nick_name = #{userNameOrNickName})", queryProvider.buildSelect(userQuery));
     }
 
 

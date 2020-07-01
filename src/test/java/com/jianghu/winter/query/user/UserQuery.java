@@ -15,7 +15,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @Builder
-@QueryTable(table = "t_user")
+@QueryTable(table = "t_user", entity = UserEntity.class)
 public class UserQuery extends PageQuery {
     private String account;
     private String userName;

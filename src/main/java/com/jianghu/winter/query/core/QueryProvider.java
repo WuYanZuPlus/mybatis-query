@@ -6,12 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import javax.persistence.Column;
+import javax.persistence.Transient;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author daniel.hu
@@ -36,6 +37,9 @@ public class QueryProvider {
         return build(query, Operation.COUNT);
     }
 
+    /**
+     * 动态拼接查询sql
+     */
     protected String build(Object query, Operation operation) {
         String selectSql = buildStartSql(query, operation);
         selectSql = buildWhereSql(selectSql, query);
@@ -48,6 +52,9 @@ public class QueryProvider {
         return selectSql;
     }
 
+    /**
+     * 构建开始sql
+     */
     private String buildStartSql(Object query, Operation operation) {
         QueryTable queryTable = query.getClass().getAnnotation(QueryTable.class);
         if (queryTable == null) {
@@ -56,7 +63,7 @@ public class QueryProvider {
         String startSql = "";
         switch (operation) {
             case SELECT:
-                startSql = "SELECT *";
+                startSql = "SELECT " + buildSelectColumn(queryTable.entity());
                 break;
             case COUNT:
                 startSql = "SELECT COUNT(*)";
@@ -69,6 +76,20 @@ public class QueryProvider {
         return startSql + " FROM " + queryTable.table();
     }
 
+    /**
+     * 优化查询，select *优化为 select实体类映射的字段
+     */
+    private String buildSelectColumn(Class<?> clazz) {
+        List<String> needSelectColumn = Arrays.stream(FieldUtils.getAllFields(clazz))
+                .filter(this::shouldRetain)
+                .map(this::selectAs)
+                .collect(Collectors.toList());
+        return needSelectColumn.isEmpty() ? " *" : StringUtils.join(needSelectColumn, ", ");
+    }
+
+    /**
+     * 构建条件查询sql
+     */
     protected String buildWhereSql(String selectSql, Object query) {
         List<String> whereList = new LinkedList<>();
         Arrays.stream(query.getClass().getDeclaredFields()).forEach(field -> {
@@ -99,6 +120,9 @@ public class QueryProvider {
         return selectSql;
     }
 
+    /**
+     * 排序sql
+     */
     private String buildSortSql(String selectSql, PageQuery pageQuery) {
         if (StringUtils.isNotBlank(pageQuery.getSort())) {
             selectSql += " ORDER BY " + pageQuery.getSort();
@@ -106,6 +130,9 @@ public class QueryProvider {
         return selectSql;
     }
 
+    /**
+     * 分页sql
+     */
     private String buildPageSql(String selectSql, PageQuery pageQuery) {
         if (pageQuery.needPaging()) {
             String pageSql = " LIMIT " + pageQuery.getOffset() + "," + pageQuery.getPageSize();
@@ -123,11 +150,39 @@ public class QueryProvider {
         return null;
     }
 
+    /**
+     * 重新赋值fieldValue
+     */
     private void reWriteFieldValue(Object target, String fieldName, Object fieldValue) {
         try {
             FieldUtils.writeDeclaredField(target, fieldName, fieldValue, true);
         } catch (IllegalAccessException e) {
             log.error("Override exception for field value suffixed with like: {}", e.getMessage());
         }
+    }
+
+    private boolean shouldRetain(Field field) {
+        return !field.getName().startsWith("$")
+                && !Modifier.isStatic(field.getModifiers())
+                && !field.isAnnotationPresent(Transient.class);
+    }
+
+    /**
+     * 字段处理（先判断有无@Cloumn注解，然后驼峰处理）
+     */
+    public static String resolveColumnName(Field field) {
+        Column column = field.getAnnotation(Column.class);
+        return column != null && !column.name().isEmpty() ? column.name() : CommonUtil.camelCaseToUnderscore(field.getName());
+    }
+
+    /**
+     * 驼峰字段需别名处理
+     * 应用场景：选择字段查询时（非select *）
+     * @return 如: user_code AS userCode
+     */
+    private String selectAs(Field field) {
+        String columnName = resolveColumnName(field);
+        String fieldName = field.getName();
+        return columnName.equalsIgnoreCase(fieldName) ? columnName : columnName + " AS " + fieldName;
     }
 }

@@ -153,6 +153,40 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- 更新pom版本号（解决在install/deploy之后，maven不能识别版本占位符问题）-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>bom</flattenMode>
+                    <flattenedPomFilename>target/${project.artifactId}.pom.xml</flattenedPomFilename>
+                    <pomElements>
+                        <version>resolve</version>
+                        <properties>resolve</properties>
+                        <dependencies>resolve</dependencies>
+                        <pluginManagement>resolve</pluginManagement>
+                    </pomElements>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <distributionManagement>

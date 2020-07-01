@@ -157,6 +157,7 @@ public class MybatisTest {
         user1.setNickName("James");
         user1.setPassword("123456");
         user1.setValid(true);
+        user1.setUserType(UserType.SYSTEM);
         list.add(user1);
 
         UserEntity user2 = new UserEntity();
@@ -166,6 +167,7 @@ public class MybatisTest {
         user2.setNickName("James");
         user2.setPassword("123456");
         user2.setValid(true);
+        user2.setUserType(UserType.TENANT);
         list.add(user2);
 
         UserQuery userQuery = UserQuery.builder().build();

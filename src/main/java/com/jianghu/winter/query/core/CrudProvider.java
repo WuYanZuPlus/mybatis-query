@@ -6,14 +6,13 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * @author daniel.hu
@@ -21,7 +20,7 @@ import javax.persistence.Transient;
  */
 @Slf4j
 public class CrudProvider extends QueryProvider {
-    private final Map<Class, String> insertSqlMap = new HashMap<>();
+    private final Map<Class<?>, String> insertSqlMap = new HashMap<>();
 
     /**
      * delete
@@ -172,8 +171,4 @@ public class CrudProvider extends QueryProvider {
         return table.name();
     }
 
-    private static String resolveColumnName(Field field) {
-        Column column = field.getAnnotation(Column.class);
-        return column != null && !column.name().isEmpty() ? column.name() : CommonUtil.camelCaseToUnderscore(field.getName());
-    }
 }
