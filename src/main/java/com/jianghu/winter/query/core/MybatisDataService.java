@@ -2,6 +2,8 @@ package com.jianghu.winter.query.core;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @param <E> - entity (like UserEntity)
@@ -31,10 +33,18 @@ public interface MybatisDataService<E extends Persistable<I>, I extends Serializ
 
     List<E> query(Q query);
 
+    default <V> List<V> query(Q query, Function<E, V> transfer) {
+        return query(query).stream().map(transfer).collect(Collectors.toList());
+    }
+
     long count(Q query);
 
     default PageList<E> page(Q query) {
         return new PageList<>(query(query), count(query));
+    }
+
+    default <V> PageList<V> page(Q query, Function<E, V> transfer) {
+        return new PageList<>(query(query, transfer), count(query));
     }
 
 }

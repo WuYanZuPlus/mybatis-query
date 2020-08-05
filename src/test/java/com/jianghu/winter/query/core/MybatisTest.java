@@ -1,6 +1,8 @@
 package com.jianghu.winter.query.core;
 
 import com.jianghu.winter.query.user.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -82,6 +84,31 @@ public class MybatisTest {
         PageList<UserEntity> page = userService.page(query);
         assertEquals(4, page.total);
         assertEquals(2, page.getList().size());
+    }
+
+    @Test
+    public void test_page2() {
+        UserQuery query = UserQuery.builder().build();
+        query.setPageNumber(0);
+        query.setPageSize(2);
+        PageList<UserResponse> page = userService.page(query, this::buildResponse);
+        assertEquals(4, page.total);
+        assertEquals(2, page.getList().size());
+    }
+
+    @Getter
+    @Setter
+    public static class UserResponse {
+        private String account;
+        private String userName;
+    }
+
+    private UserResponse buildResponse(UserEntity userEntity) {
+        UserResponse userResponse = new UserResponse();
+        userResponse.setAccount(userEntity.getAccount());
+        userResponse.setUserName(userEntity.getUserName());
+        //  或者 BeanUtils.copyProperties(userEntity, userResponse);
+        return userResponse;
     }
 
     @Test
