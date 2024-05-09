@@ -33,7 +33,7 @@ public class CrudProvider extends QueryProvider {
      * insert
      */
     public String buildInsert(Object entity) {
-        String insertSql = insertSqlMap.computeIfAbsent(entity.getClass(), CrudProvider::buildInsert);
+        String insertSql = insertSqlMap.computeIfAbsent(entity.getClass(), entityClass -> buildInsert(entityClass));
         log.debug(LOG_SQL, insertSql);
         return insertSql;
     }
